@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+    frontend:
+        build: ./frontend
+        container_name: frontend
+        restart: always
+        ports:
+            - "3000:3000"
+        depends_on:
+            - backend
+        networks:
+            - mernbridge
+    backend:
+        build: .
+        container_name: backend
+        restart: always
+        ports:
+            - "5000:5000"
+        networks:
+            - mernbridge
+
+
+networks:
+    mernbridge:
+        driver: bridge

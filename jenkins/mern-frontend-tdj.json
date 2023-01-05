@@ -1,0 +1,19 @@
+{
+	"family": "mern-frontend-tdj",
+	"networkMode": "awsvpc",
+	"containerDefinitions": [{
+		"name": "mern-frontend-tdj",
+		"image": "040154159363.dkr.ecr.us-east-1.amazonaws.com/frontendj:latest",
+		"portMappings": [{
+			"containerPort": 3000,
+			"protocol": "tcp"
+		}],
+		"essential": true
+	}],
+	"requiresCompatibilities": [
+		"FARGATE"
+	],
+	"cpu": "1024",
+	"memory": "3072",
+        "executionRoleArn": "arn:aws:iam::040154159363:role/ecsTaskExecutionRole"
+}

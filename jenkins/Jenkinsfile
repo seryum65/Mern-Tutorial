@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    environment {
+        ECR_REGISTRY = "040154159363.dkr.ecr.us-east-1.amazonaws.com"
+        PATH="/usr/local/bin/:${env.PATH}"
+    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build --force-rm -t "$ECR_REGISTRY/backendj:latest" .'
+                sh 'docker build --force-rm -t "$ECR_REGISTRY/frontendj:latest" ./frontend'
+                sh 'docker image ls'
+            }
+        }
+        stage('Push Image to ECR Repo') {
+            steps {
+                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
+                sh 'docker push "$ECR_REGISTRY/backendj:latest"'
+                sh 'docker push "$ECR_REGISTRY/frontendj:latest"'
+            }
+        }
+    
+
+        stage('Deploy') {
+            steps {
+                sh 'aws ecs create-cluster --cluster-name mern-ecsj'
+                sh 'aws ecs register-task-definition --cli-input-json file://jenkins/mern-frontend-tdj.json'
+                sh 'aws ecs register-task-definition --cli-input-json file://jenkins/mern-backend-tdj.json'
+                sh 'aws ecs create-service --cluster mern-ecsj --service-name mern-frontend-svcj --task-definition mern-frontend-tdj --desired-count 1 --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-08ee30343c1b325f0, subnet-06dd15ec953d7a61c],securityGroups=[sg-0dd04ddfde17cd372]}"'
+                sh 'aws ecs create-service --cluster mern-ecsj --service-name mern-backendj-svcj --task-definition mern-backend-tdj --desired-count 1 --launch-type "FARGATE" --network-configuration "awsvpcConfiguration={subnets=[subnet-08ee30343c1b325f0, subnet-06dd15ec953d7a61c],securityGroups=[sg-0e61a698cca578c2f]}"'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Deleting all local images'
+            sh 'docker image prune -af'
+        }
+    }
+}

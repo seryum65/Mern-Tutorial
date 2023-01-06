@@ -14,11 +14,13 @@ spec:
         app: mern-app
     spec:
       containers: 
-        - image: 040154159363.dkr.ecr.us-east-1.amazonaws.com/frontendj:latest
+        - image: 040154159363.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
           imagePullPolicy: Always
           name: frontend
           ports: 
             - containerPort: 3000
+      imagePullSecrets:
+            - name: regcred
 
 ---
 apiVersion: v1
